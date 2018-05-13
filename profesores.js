@@ -1,14 +1,14 @@
 // JavaScript Document
 
-//var tamanoXLienzo = 700;
-//var tamanoYLienzo = 500;
+var tamanoXLienzo = 1500;
+var tamanoYLienzo = 500;
 //var lienzoMin= 0;
-//var antImgAbajo = 0, antImgArriba = 3, antImgDerecha = 9, antImgIzquierda=7;
-var antImg = 0;
+
+var antImg = 0;	//Saber cual fue la ultima imagen utilizada, par adar continuidad a la animacion
 var posX = 100;	//Posicion donde estará el estudiante
 var posY = 100; 
 var contexto, elCanvas, imagen;	
-var arregloImgsId = ["img1F","img2F", "img3F", "img1A", "img2A", "img3A","img1I", "img2I", "img3I", "img1D", "img2D", "img3D",];	//Los id de las imagenes del estudiante,imagen;	//Diferentes imagenes del estudiante
+var arregloImgsId = ["img1F","img2F", "img3F", "img1A", "img2A", "img3A","img1I", "img2I", "img3I", "img1D", "img2D", "img3D",];	//Los id de las imagenes del estudiante	
 
 $(document).ready(inicializar);	//Se inicia la ejecucion con la funcion inicializar
 $(document).keydown(botones);	//Se tiene un event listener de teclado
@@ -32,6 +32,7 @@ function botones(event){	//Mueve el estudiante a traves del canvas y simula movi
 	"use strict";
 	
 	if(event.which===39){	//Si la tecla presionada es la flecha derecha
+		validarColisionPared("derecha");
 		if (antImg===9){
 			actualizar(10);
 			antImg=10;
@@ -48,6 +49,7 @@ function botones(event){	//Mueve el estudiante a traves del canvas y simula movi
 		posX=posX+12;
 	}
 	if(event.which===37){	//Si la tecla presionada es la flecha izquierda
+		validarColisionPared("izquierda");
 		if (antImg===6){
 			actualizar(7);
 			antImg=7;
@@ -64,6 +66,7 @@ function botones(event){	//Mueve el estudiante a traves del canvas y simula movi
 		posX=posX-12;	
 	}
 	if(event.which===38){	//Si la tecla presionada es la flecha arriba
+		validarColisionPared("arriba");
 		if (antImg===3){
 			actualizar(4);
 			antImg=4;
@@ -80,6 +83,7 @@ function botones(event){	//Mueve el estudiante a traves del canvas y simula movi
 		posY=posY-12;
 	}
 	if(event.which===40){	//Si la tecla presionada es la flecha abajo
+		validarColisionPared("frente");
 		if (antImg===0){
 			actualizar(1);
 			antImg=1;
@@ -97,6 +101,33 @@ function botones(event){	//Mueve el estudiante a traves del canvas y simula movi
 	}	
 }
 
+function validarColisionPared(direccionE){	//Valida cuando el estdiante se sale del canvas, si lo hace, reinicia la posicion, para hacer parecer que vuelve al inicio
+	"use strict";
+	if(direccionE==="derecha"){
+		if(posX-86>tamanoXLienzo){
+			posX=0;
+		}
+		return posX;
+	}
+	if(direccionE==="izquierda"){
+		if(posX+86<0){
+			posX=1500;
+		}
+		return posX;
+	}
+	if(direccionE==="arriba"){
+		if(posY+103<0){
+			posY=500;
+		}
+		return posY;
+	}
+	if(direccionE==="frente"){
+		if(posY-103>tamanoYLienzo){
+			posY=0;
+		}
+		return posY;
+	}
+}
 
 
 
