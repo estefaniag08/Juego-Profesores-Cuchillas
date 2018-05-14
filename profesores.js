@@ -153,7 +153,16 @@ function estudiante(){
 		antImg=imgFin;
 	};
 }
-
+//Clase del tipo profesor bueno
+function profesorBueno(){
+	var arregloImgProfB = ["imgPB1-I","imgPB1-D","imgPB2-A", "imgPB2-F"];//Imagenes de profesor bueno, que se pued emover de ariiba a abajo o de der a izq
+	
+}
+//Clase del tipo profesor malo
+function profesorMalo(){
+	var arregloPMalo1 = ["imgPC1-I","imgPC1-D"];	//Profesor cuchilla que va de izq a der
+	var arregloPMalo2 = ["imgPC2-A","imgPC2-F"];	//Profesor cuchilla que va de arriba a abajo
+}
 function run(){
 	buffer.width = elCanvas.width;				//El buffer se pone del tamaño del canvas del documento html
 	buffer.height = elCanvas.height;
