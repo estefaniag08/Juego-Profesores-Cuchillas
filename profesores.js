@@ -1,131 +1,173 @@
-// JavaScript Document
 
-var tamanoXLienzo = 1500;
-var tamanoYLienzo = 500;
-//var lienzoMin= 0;
+var tamanoXLienzo = 1500;							//TamanoLienzo X
+var tamanoYLienzo = 500;							//TamanoLienzo Y
+var posX, posY;										//Posicion donde estará el estudiante  
+var elCanvas;
+var contexto;
+var buffer;
+var contextoBuffer;	
 
-var antImg = 0;	//Saber cual fue la ultima imagen utilizada, par adar continuidad a la animacion
-var posX = 100;	//Posicion donde estará el estudiante
-var posY = 100; 
-var contexto, elCanvas, imagen;	
-var arregloImgsId = ["img1F","img2F", "img3F", "img1A", "img2A", "img3A","img1I", "img2I", "img3I", "img1D", "img2D", "img3D",];	//Los id de las imagenes del estudiante	
+var est = new estudiante();							//Objeto del tipo estudiante
+var vidaEst;
+var jugando;
+var antImg = 1;
 
-$(document).ready(inicializar);	//Se inicia la ejecucion con la funcion inicializar
-$(document).keydown(botones);	//Se tiene un event listener de teclado
+$(document).ready(inicializar);						//Se inicia la ejecucion con la funcion inicializar
+$(document).keydown(botones);						//Se tiene un event listener de teclado
 
 function inicializar(){
-	"use strict";
-	elCanvas = $("#lienzo")[0];	//El lienzo de la pagina HTML
-	contexto = elCanvas.getContext("2d");	//Contexto
-	contexto.clearRect(0, 0, elCanvas.width, elCanvas.height);
-	$("iniciarBoton").click(actualizar(0));
+	jugando = true;
+	est.inicio();									//Inicializamos los valores del estudiante
+	elCanvas = document.getElementById("lienzo");						//Canvas del documento html
+	contexto = elCanvas.getContext("2d");			//Extrae  el contexto del canvas
+	buffer = document.createElement("canvas");		//Se crea un nuevo elemento canvas en el documento
+	run();			//Inicia el algoritmo del juego
+	$("iniciarBoton").click(function(){
+		if(jugando===false){
+			jugando = true;
+			inicializar();
+		}	
+	});
 	
 }	
-function actualizar(numImagen){
-	"use strict";
-	contexto.clearRect(0, 0, elCanvas.width, elCanvas.height);
-	imagen = document.getElementById(arregloImgsId[numImagen]);
-	contexto.drawImage (imagen,posX,posY); //Dibuja la imagen	
-}
-
-function botones(event){	//Mueve el estudiante a traves del canvas y simula movimiento
-	"use strict";
-	
-	if(event.which===39){	//Si la tecla presionada es la flecha derecha
-		validarColisionPared("derecha");
-		if (antImg===9){
-			actualizar(10);
-			antImg=10;
-		} else if(antImg===10){
-			actualizar(11);
-			antImg=11;
-		}else if(antImg===11){
-			actualizar(9);
-			antImg=9;
-		} else if (antImg < 9){
-			actualizar(11);
-			antImg=11;
-		}
+//Mueve el estudiante a traves del canvas
+function botones(event){	
+	est.validarImg(event.which);
+	if(event.which===39 || event.which===68){	//Si la tecla presionada es la flecha derecha
+		est.validarColisionPared("derecha");
 		posX=posX+12;
 	}
-	if(event.which===37){	//Si la tecla presionada es la flecha izquierda
-		validarColisionPared("izquierda");
-		if (antImg===6){
-			actualizar(7);
-			antImg=7;
-		} else if(antImg===7){
-			actualizar(8);
-			antImg=8;
-		}else if(antImg===8){
-			actualizar(6);
-			antImg=6;
-		} else if(antImg<6 || antImg>8){
-			actualizar(7);
-			antImg=7;
-		}
+	if(event.which===37 || event.which===65){	//Si la tecla presionada es la flecha izquierda
+		est.validarColisionPared("izquierda");
 		posX=posX-12;	
 	}
-	if(event.which===38){	//Si la tecla presionada es la flecha arriba
-		validarColisionPared("arriba");
-		if (antImg===3){
-			actualizar(4);
-			antImg=4;
-		} else if(antImg===4){
-			actualizar(5);
-			antImg=5;
-		}else if(antImg===5){
-			actualizar(3);
-			antImg=3;
-		} else if(antImg<3 || antImg>5) {
-			actualizar(5);
-			antImg=5;
-		}
+	if(event.which===38 || event.which===87){	//Si la tecla presionada es la flecha arriba
+		est.validarColisionPared("arriba");
 		posY=posY-12;
 	}
-	if(event.which===40){	//Si la tecla presionada es la flecha abajo
-		validarColisionPared("frente");
-		if (antImg===0){
-			actualizar(1);
-			antImg=1;
-		} else if(antImg===1){
-			actualizar(2);
-			antImg=2;
-		}else if(antImg===2){
-			actualizar(0);
-			antImg=0;
-		} else if (antImg >2){
-			actualizar(1);
-			antImg=1;
-		}
+	if(event.which===40 || event.which===83){	//Si la tecla presionada es la flecha abajo
+		est.validarColisionPared("frente");
 		posY=posY+12;
-	}	
+	}
+	run();
+}
+//Clase del tipo estudiante
+function estudiante(){
+	//Los id de las imagenes del estudiante
+	var arregloImgsId = ["img1F","img2F", "img3F", "img1A", "img2A", "img3A","img1I", "img2I", "img3I", "img1D", "img2D", "img3D"];	//Los id de las imagenes del estudiante
+	var imagen;														//Saber cual fue la ultima imagen utilizada, para dar continuidad a la animacion
+	var tamanoImagenXE = 86, tamanoImagenYE = 103; 								//Tamano de la imagen actual
+	this.inicio = function(){
+		posX=750;		//Inicializamos valores de posicion y vida
+		posY=250;
+		vidaEst=100;
+	};
+	//Dibuja el estudiante en la nueva posicion
+	this.actualizar = function(ctx){
+		ctx.clearRect(0, 0, elCanvas.width, elCanvas.height);
+		this.imagen = document.getElementById(arregloImgsId[antImg]);
+		ctx.drawImage(this.imagen,posX,posY); 										//Dibuja la imagen
+	};
+	//Valida cuando el estudiante se sale del canvas, si lo hace, reinicia la posicion, para hacer parecer que vuelve al inicio
+	this.validarColisionPared = function(direccionE){	
+		if(direccionE==="derecha"){
+			if(posX-tamanoImagenXE>tamanoXLienzo){
+				posX=-40;
+			}
+		}
+		if(direccionE==="izquierda"){
+			if(posX+tamanoImagenXE<0){
+				posX=tamanoXLienzo;
+			}
+		}
+		if(direccionE==="arriba"){
+			if(posY+tamanoImagenYE<0){
+				posY=tamanoYLienzo;
+			}
+		}
+		if(direccionE==="frente"){
+			if(posY-tamanoImagenYE>tamanoYLienzo){
+				posY=-40;
+			}
+		}
+	};
+	//Valida cual imagen se pondrá para simular la animacion de movimiento del estudiante
+	this.validarImg = function(tecla){		
+		var imgFin;
+		if(tecla===39 || tecla===68){		//Si la tecla presionada es la flecha derecha
+			if (antImg===9){
+				imgFin=10;
+			}
+			if(antImg===10){
+				imgFin=11;
+			}
+			if(antImg===11){
+				imgFin=9;
+			}
+			if (antImg < 9){
+				imgFin=11;
+			}
+		}
+		if(tecla===37 || tecla===65){		//Si la tecla presionada es la flecha izquierda
+			if (antImg===6){
+				imgFin=7;
+			}
+			if(antImg===7){
+				imgFin=8;
+			}
+			if(antImg===8){
+				imgFin=6;
+			}
+			if(antImg<6 || antImg>8){
+				imgFin=7;
+			}
+		}
+		if(tecla===38 || tecla===87){	//Si la tecla presionada es la flecha arriba
+			if (antImg===3){
+				imgFin=4;
+			} 
+			if(antImg===4){
+				imgFin=5;
+			}
+			if(antImg===5){
+				imgFin=3;
+			}
+			if(antImg<3 || antImg>5) {
+				imgFin=5;
+			}
+		}
+		if(tecla===40 || tecla===83){	//Si la tecla presionada es la flecha abajo
+			if (antImg===0){
+				imgFin=1;
+			} 
+			if(antImg===1){
+				imgFin=2;
+			}
+			if(antImg===2){
+				imgFin=0;
+			}
+			if (antImg >2){
+				imgFin=1;
+			}	
+		}
+		antImg=imgFin;
+	};
 }
 
-function validarColisionPared(direccionE){	//Valida cuando el estdiante se sale del canvas, si lo hace, reinicia la posicion, para hacer parecer que vuelve al inicio
-	"use strict";
-	if(direccionE==="derecha"){
-		if(posX-86>tamanoXLienzo){
-			posX=0;
+function run(){
+	buffer.width = elCanvas.width;				//El buffer se pone del tamaño del canvas del documento html
+	buffer.height = elCanvas.height;
+	contextoBuffer = buffer.getContext("2d");	//El contexto del buffer es 2d
+	if(jugando){
+		contextoBuffer.clearRect(0,0,buffer.width,buffer.height);	//Hace un rectangulo dentro de un rectangulo de tamaño dado el cual limpia dibujos anteriormente hechos
+		est.actualizar(contextoBuffer);	//Se dibuja el estudiante en el este contexto
+		//Aca va lo de validar que colisionen o no con los profesores
+		if(vidaEst<=0){
+			jugando=false;
 		}
-		return posX;
-	}
-	if(direccionE==="izquierda"){
-		if(posX+86<0){
-			posX=1500;
-		}
-		return posX;
-	}
-	if(direccionE==="arriba"){
-		if(posY+103<0){
-			posY=500;
-		}
-		return posY;
-	}
-	if(direccionE==="frente"){
-		if(posY-103>tamanoYLienzo){
-			posY=0;
-		}
-		return posY;
+		contexto.clearRect(0,0,elCanvas.width,elCanvas.height);	//Se limpia el rectangulo del contexto del canvas del html
+		contexto.drawImage(buffer, 0, 0);						//Se dibuja lo que está en el buffer
+		//setInterval(run(),20);
 	}
 }
 

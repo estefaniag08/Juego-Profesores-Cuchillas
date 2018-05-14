@@ -27,3 +27,14 @@ body{
 #contenedorCanvas{
 
 }
+#contenedorInstrucciones{
+	align-content: center;
+}
+#instrucciones{
+	width: 50%;
+	float:left;
+}
+#iniciarJuego{
+	width: 50%;
+	float: right;
+}
