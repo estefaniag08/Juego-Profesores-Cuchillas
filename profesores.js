@@ -6,6 +6,18 @@ var elCanvas;
 var contexto;
 var buffer;
 var contextoBuffer;	
+//Agregado por Edwin
+var enemigosDerecha= [];
+var posicionActDerecha=[];
+var enemigosIzquierda= [];
+var posicionActIzquierda=[];
+var aliados;
+var posicionActArriba;
+var bonus=0;
+var imagenDerecha= new Image();
+var imagenIzquierda = new Image();
+var imagenAliado= new Image();
+//Termina Agregación
 
 var est = new estudiante();							//Objeto del tipo estudiante
 var vidaEst;
@@ -20,7 +32,11 @@ function inicializar(){
 	est.inicio();									//Inicializamos los valores del estudiante
 	elCanvas = document.getElementById("lienzo");						//Canvas del documento html
 	contexto = elCanvas.getContext("2d");			//Extrae  el contexto del canvas
-	buffer = document.createElement("canvas");		//Se crea un nuevo elemento canvas en el documento
+	buffer = document.createElement("canvas");			//Se crea un nuevo elemento canvas en el documento
+	//Agregado por Edwin
+	posicionActArriba=(Math.floor(Math.random() * (elCanvas.height)-elCanvas.height));	
+	aliados=(Math.floor(Math.random() * (elCanvas.width)));
+	//Terminado agregación
 	run();			//Inicia el algoritmo del juego
 	$("iniciarBoton").click(function(){
 		if(jugando===false){
@@ -169,16 +185,93 @@ function run(){
 	contextoBuffer = buffer.getContext("2d");	//El contexto del buffer es 2d
 	if(jugando){
 		contextoBuffer.clearRect(0,0,buffer.width,buffer.height);	//Hace un rectangulo dentro de un rectangulo de tamaño dado el cual limpia dibujos anteriormente hechos
+		
 		est.actualizar(contextoBuffer);	//Se dibuja el estudiante en el este contexto
+		
 		//Aca va lo de validar que colisionen o no con los profesores
 		if(vidaEst<=0){
 			jugando=false;
 		}
 		contexto.clearRect(0,0,elCanvas.width,elCanvas.height);	//Se limpia el rectangulo del contexto del canvas del html
 		contexto.drawImage(buffer, 0, 0);						//Se dibuja lo que está en el buffer
+		//Agregado por Edwin
+		buscarImagenes();
+		crearEnemigos();
+		setInterval(moverPersonajes,10);
+		//Terminado agregación
 		//setInterval(run(),20);
 	}
 }
 
 
+
+//Agregado por Edwin
+function crearEnemigos(){
+	for (var i = 0; i <= Math.floor(Math.random()*4) +1; i++) {
+		enemigosDerecha.push(Math.floor(Math.random() * (elCanvas.height-200)));
+		posicionActDerecha.push((-1)*Math.floor(Math.random() * (elCanvas.width)-100));	
+	}
+
+	for (var i = 0; i <= Math.floor(Math.random()*5) +1; i++) {
+		enemigosIzquierda.push(Math.floor(Math.random() * (elCanvas.height-200)));
+		posicionActIzquierda.push(Math.floor(Math.random() * (elCanvas.width)+elCanvas.width));	
+	}
+}		
+
+function cambiarPincel(){
+	contexto.fillStyle="#CCFFCC";
+}
+
+		
+function buscarImagenes(){
+	imagenIzquierda.src = "Imagen/ProfesoresMalos/PC1-I.png";
+	imagenDerecha.src = "Imagen/ProfesoresMalos/PC1-D.png";	
+	imagenAliado.src = "Imagen/ProfesoresBuenos/PB2-F.png";
+}
+		
+function moverDerecha(){
+	for (var i = 0; i < enemigosDerecha.length; i++) {
+		contextoBuffer.drawImage(imagenDerecha,posicionActDerecha[i],enemigosDerecha[i],100,200);
+		if(posicionActDerecha[i]>elCanvas.width-10){
+			posicionActDerecha[i]=-90;
+		}
+		else{
+			posicionActDerecha[i]=posicionActDerecha[i]+5;
+		}	
+	}
+}
+
+function moverIzquierda(){
+	for (var i = 0; i < enemigosIzquierda.length; i++) {
+		contextoBuffer.drawImage(imagenIzquierda,posicionActIzquierda[i],enemigosIzquierda[i],100,200);
+		if(posicionActIzquierda[i]<-90){
+			posicionActIzquierda[i]=elCanvas.width-10;
+		}
+		else{
+			posicionActIzquierda[i]=posicionActIzquierda[i]-5;
+		}	
+	}
+}
+
+function moverAliado(){
+	contextoBuffer.drawImage(imagenAliado,aliados,posicionActArriba,100,200);
+	if(posicionActArriba>elCanvas.height-10){
+		posicionActArriba=-190;
+		aliados=(Math.floor(Math.random() * (elCanvas.width))-200);
+	}
+	else{
+		posicionActArriba=posicionActArriba+3;
+		bonus--;
+	}
+}
+		
+function moverPersonajes(){
+	moverIzquierda();
+	moverDerecha();
+	if(bonus%10 == 0){
+		moverAliado();
+	} 
+	bonus++;
+}
+//Termina Agregación
 
