@@ -33,10 +33,12 @@ function inicializar(){
 	elCanvas = document.getElementById("lienzo");						//Canvas del documento html
 	contexto = elCanvas.getContext("2d");			//Extrae  el contexto del canvas
 	buffer = document.createElement("canvas");			//Se crea un nuevo elemento canvas en el documento
-	//Agregado por Edwin
+	
 	posicionActArriba=(Math.floor(Math.random() * (elCanvas.height)-elCanvas.height));	
 	aliados=(Math.floor(Math.random() * (elCanvas.width)));
-	//Terminado agregación
+	buscarImagenes();
+	crearEnemigos();
+	
 	run();			//Inicia el algoritmo del juego
 	$("iniciarBoton").click(function(){
 		if(jugando===false){
@@ -65,7 +67,6 @@ function botones(event){
 		est.validarColisionPared("frente");
 		posY=posY+12;
 	}
-	run();
 }
 //Clase del tipo estudiante
 function estudiante(){
@@ -192,14 +193,11 @@ function run(){
 		if(vidaEst<=0){
 			jugando=false;
 		}
+		moverPersonajes();										//Mueve los profesores
 		contexto.clearRect(0,0,elCanvas.width,elCanvas.height);	//Se limpia el rectangulo del contexto del canvas del html
 		contexto.drawImage(buffer, 0, 0);						//Se dibuja lo que está en el buffer
-		//Agregado por Edwin
-		buscarImagenes();
-		crearEnemigos();
-		setInterval(moverPersonajes,10);
-		//Terminado agregación
-		//setInterval(run(),20);
+
+		setInterval(run,10);
 	}
 }
 
@@ -233,10 +231,10 @@ function moverDerecha(){
 	for (var i = 0; i < enemigosDerecha.length; i++) {
 		contextoBuffer.drawImage(imagenDerecha,posicionActDerecha[i],enemigosDerecha[i],100,200);
 		if(posicionActDerecha[i]>elCanvas.width-10){
-			posicionActDerecha[i]=-90;
+			posicionActDerecha[i]=-8;
 		}
 		else{
-			posicionActDerecha[i]=posicionActDerecha[i]+5;
+			posicionActDerecha[i]=posicionActDerecha[i]+1;
 		}	
 	}
 }
@@ -248,7 +246,7 @@ function moverIzquierda(){
 			posicionActIzquierda[i]=elCanvas.width-10;
 		}
 		else{
-			posicionActIzquierda[i]=posicionActIzquierda[i]-5;
+			posicionActIzquierda[i]=posicionActIzquierda[i]-1;
 		}	
 	}
 }
@@ -256,7 +254,7 @@ function moverIzquierda(){
 function moverAliado(){
 	contextoBuffer.drawImage(imagenAliado,aliados,posicionActArriba,100,200);
 	if(posicionActArriba>elCanvas.height-10){
-		posicionActArriba=-190;
+		posicionActArriba=-90;
 		aliados=(Math.floor(Math.random() * (elCanvas.width))-200);
 	}
 	else{
@@ -268,6 +266,7 @@ function moverAliado(){
 function moverPersonajes(){
 	moverIzquierda();
 	moverDerecha();
+	//Aca toca poner una condicion que cuando un profesor se salga del canvas, lo reinicie en un posición random de la
 	if(bonus%10 == 0){
 		moverAliado();
 	} 
