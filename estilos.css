@@ -12,6 +12,24 @@ body{
 	text-align: center;
 	align-items: center;
 }
+#grid{
+	width: 90%;
+	height: 100%;
+	display: grid;
+	margin: 0 auto;
+	grid-template-columns: 20% 80%; 
+	grid-gap: 20px;
+	justify-elements: stretch;
+	margin-left: auto;
+    margin-right: auto;
+}
+
+#seccionInstrucciones{
+	grid-column: 1/2;
+}
+#contenedorPrincipal{
+	grid-column:2/3;
+}
 .imagen{
 	display: none;
 }
@@ -21,20 +39,48 @@ body{
 	border-image: url(Imagen/fondoBorde.png) 30%;
 	
 }
-#contenedorPrincipal{
-		
-}
-#contenedorCanvas{
 
-}
 #contenedorInstrucciones{
 	align-content: center;
 }
+#contenedorCanvas{
+	margin: 0 auto;
+	width: 80%;
+}
 #instrucciones{
-	width: 50%;
-	float:left;
+	margin: 0 auto;
+	background-image: url("Imagen/fondoBordeGiradov2.png");
+	background-size: 100%;
+	background-repeat:repeat-y;
+	align-content: center;
+	align-items: center;
 }
 #iniciarJuego{
-	width: 50%;
-	float: right;
+	margin: 0 auto;
+	background-image: url("Imagen/fondoBordeGiradov2.png");
+	background-size: 100%;
+
+}
+#divBoton{
+	margin-left: 5%;
+}
+.boton{
+	width: 150px;
+	height: 50px;
+	font-family: 'Aladin';
+	border: none;
+	text-align: center;
+	text-decoration: none;
+	font-size: 20px;
+	border-radius: 5px;
+	color: antiquewhite;
+	background-color: rgba(104,71,71,1.00);
+}
+.boton:hover{
+	color: rgba(104,71,71,1.00);
+	background-color: antiquewhite;
+}
+#creditos{
+	font-size: 20px;
+	color: antiquewhite;
 }

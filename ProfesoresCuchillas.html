@@ -35,40 +35,36 @@
 	<section id="titulo">
 		<img id="tituloJuego" src="Imagen/Cool Text.png">
 	</section>
-	<section id="contenedorPrincipal">
-		<div id="contenedorCanvas">
-			<canvas id="lienzo" width="1500" height="500">
-				Tu navegador no es compatible
-			</canvas>
-		</div>
-		<div id="contenedorInstrucciones">
-		  <div id="instrucciones">
-				<div> Profesores </div>
-				<div id="prof1">
+	<div id="grid">
+		<section id="seccionInstrucciones">
+			<div id="contenedorInstrucciones">
+				<div id="instrucciones">
+					<div> PROFESORES </div>
 					<img src="Imagen/Animacion/buenop.gif">
 					<div> Profesor Bueno</div>
-				</div>
-				<div id="prof2">
-				  <img src="Imagen/Animacion/malo1p.gif">
-				  <div> Profesor Cuchilla</div>
-			</div>
-				<div id="prof3">
-					<img src="Imagen/Animacion/malo2p.gif">
+					<img src="Imagen/Animacion/malo1p.gif">
 					<div> Profesor Cuchilla</div>
-				</div>	
-			</div>
-			<div id="iniciarJuego">
-				<div id="vida">
-					<img src="Imagen/vida.png">
+					<br>
+					<div> CONTROLES </div>
+					<img src="Imagen/arrows.png">
+					<img src="Imagen/wasd.png">
+					<button id="iniciarBoton" class="boton">Iniciar Juego</button>
+					<button id="reiniciarBoton" class="boton" onClick="document.location.reload();">Reiniciar Juego</button>
+					<br>
+					<div> CRÉDITOS </div>
+					<div id="creditos"> Estefanía Garcia Gonzalez - Edwin Aarón Garcia Pulido  2018 - Universidad Distrital</div>
 				</div>
-				<div id="divBoton">
-					<button id="iniciarBoton">Iniciar</button>
-				</div>
-						
 			</div>
-			
-		</div>
-	</section>	
+		</section>
+		<section id="contenedorPrincipal">
+			<div id="contenedorCanvas">
+				<canvas id="lienzo" width="1200" height="800">
+					Tu navegador no es compatible
+				</canvas>
+			</div>
+		</section>
+	</div>
+		
 </body>
 
 </html>

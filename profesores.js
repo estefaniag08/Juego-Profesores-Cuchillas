@@ -1,49 +1,37 @@
 
-var tamanoXLienzo = 1500;							//TamanoLienzo X
-var tamanoYLienzo = 500;							//TamanoLienzo Y
+var tamanoXLienzo = 1200;							//TamanoLienzo X
+var tamanoYLienzo = 800;							//TamanoLienzo Y
 var posX, posY;										//Posicion donde estará el estudiante  
 var elCanvas;
 var contexto;
 var buffer;
 var contextoBuffer;	
-//Agregado por Edwin
-var enemigosDerecha= [];
-var posicionActDerecha=[];
-var enemigosIzquierda= [];
-var posicionActIzquierda=[];
-var aliados;
-var posicionActArriba;
-var bonus=0;
-var imagenDerecha= new Image();
-var imagenIzquierda = new Image();
-var imagenAliado= new Image();
-//Termina Agregación
 
 var est = new estudiante();							//Objeto del tipo estudiante
 var vidaEst;
 var jugando;
 var antImg = 1;
+var i,j, puntaje;
+var profesoresMalos;		//Arreglo con todos los profesores malos que hay
+var profesoresBuenos;	//Arreglo con todos profesores buenos
+
 
 $(document).ready(inicializar);						//Se inicia la ejecucion con la funcion inicializar
 $(document).keydown(botones);						//Se tiene un event listener de teclado
 
 function inicializar(){
-	jugando = true;
+	jugando = false;
+	profesoresMalos = [new profesorMalo(0), new profesorMalo(1), new profesorMalo(0), new profesorMalo(1),new profesorMalo(0),new profesorMalo(1),new profesorMalo(0),new profesorMalo(1), new profesorMalo(0), new profesorMalo(1)];
+	profesoresBuenos = [ new profesorBueno(0), new profesorBueno(0), new profesorBueno(0), new profesorBueno(0), new profesorBueno(1), new profesorBueno(1)];
 	est.inicio();									//Inicializamos los valores del estudiante
-	elCanvas = document.getElementById("lienzo");						//Canvas del documento html
+	elCanvas = document.getElementById("lienzo");	//Canvas del documento html
 	contexto = elCanvas.getContext("2d");			//Extrae  el contexto del canvas
-	buffer = document.createElement("canvas");			//Se crea un nuevo elemento canvas en el documento
-	
-	posicionActArriba=(Math.floor(Math.random() * (elCanvas.height)-elCanvas.height));	
-	aliados=(Math.floor(Math.random() * (elCanvas.width)));
-	buscarImagenes();
-	crearEnemigos();
-	
-	run();			//Inicia el algoritmo del juego
-	$("iniciarBoton").click(function(){
+	buffer = document.createElement("canvas");		//Se crea un nuevo elemento canvas en el documento
+//	run();											//Inicia el algoritmo del juego
+	$("#iniciarBoton").click(function(){
 		if(jugando===false){
-			jugando = true;
-			inicializar();
+			jugando=true;
+			run();
 		}	
 	});
 	
@@ -75,15 +63,21 @@ function estudiante(){
 	var imagen;														//Saber cual fue la ultima imagen utilizada, para dar continuidad a la animacion
 	var tamanoImagenXE = 86, tamanoImagenYE = 103; 								//Tamano de la imagen actual
 	this.inicio = function(){
-		posX=750;		//Inicializamos valores de posicion y vida
+		posX=450;		//Inicializamos valores de posicion y vida
 		posY=250;
-		vidaEst=100;
+		vidaEst=10000;
+		puntaje=0;
 	};
 	//Dibuja el estudiante en la nueva posicion
 	this.actualizar = function(ctx){
 		ctx.clearRect(0, 0, elCanvas.width, elCanvas.height);
 		this.imagen = document.getElementById(arregloImgsId[antImg]);
 		ctx.drawImage(this.imagen,posX,posY); 										//Dibuja la imagen
+		ctx.save();
+		ctx.fillStyle = "#ffffff";
+		ctx.font = "12px sans-serif";
+		ctx.fillText("puntos: "+ puntaje, posX, (posY + 105));
+		ctx.fillText("vida: "+ vidaEst, posX, posY);
 	};
 	//Valida cuando el estudiante se sale del canvas, si lo hace, reinicia la posicion, para hacer parecer que vuelve al inicio
 	this.validarColisionPared = function(direccionE){	
@@ -107,6 +101,15 @@ function estudiante(){
 				posY=-40;
 			}
 		}
+	};
+	//Valida la colision con otros elementos
+	this.colision = function(x,y){
+		var distancia=Math.sqrt( Math.pow( (x-posX), 2)+Math.pow( (y-posY),2));
+		if(distancia>this.imagen.width){
+			return false;
+		} else if (distancia<=this.imagen.width){
+			return true;	
+		}   
 	};
 	//Valida cual imagen se pondrá para simular la animacion de movimiento del estudiante
 	this.validarImg = function(tecla){		
@@ -170,16 +173,133 @@ function estudiante(){
 		antImg=imgFin;
 	};
 }
+
+function aleatorio(piso,techo){
+	return Math.floor(Math.random() * (techo - piso + 1)) + piso;
+}
 //Clase del tipo profesor bueno
-function profesorBueno(){
-	var arregloImgProfB = ["imgPB1-I","imgPB1-D","imgPB2-A", "imgPB2-F"];//Imagenes de profesor bueno, que se pued emover de ariiba a abajo o de der a izq
+
+function profesorBueno(ori){
+	//var arregloImgProfB = ["imgPB2-A", "imgPB2-F"];//Imagenes de profesor bueno, que se pued emover de ariiba a abajo o de der a izq
+	var img, velocidad;
+	var colisionPared=false;
+	var xAliado, yAliado;
+	var orientacion = ori;
+	var direccion;
+	if(orientacion===1){
+		this.img = document.getElementById("imgPB2-F");
+		this.direccion=1;
+		this.yAliado=20;
+		
+	} else if(orientacion===0) {
+		this.img = document.getElementById("imgPB2-A");
+		this.direccion=-1;
+		this.yAliado=tamanoXLienzo;
+	}	
+
 	
+	this.xAliado = aleatorio(10,tamanoXLienzo-50);
+	this.velocidad = 0;
+	while(this.velocidad === 0){
+		this.velocidad=aleatorio(8,15);
+	}
+		
+	this.dibujarAliado = function(ctx){
+		var img3 = this.img;
+		ctx.drawImage(img3,this.xAliado,this.yAliado);
+	};		
+	
+	this.moverAliado = function(){
+		this.yAliado = this.yAliado + (this.direccion*0.2*(this.velocidad/10));
+		this.yAliado = (tamanoYLienzo + this.yAliado)%tamanoYLienzo;
+		this.reiniciar();
+	};
+	
+	this.reiniciar = function(){
+		if(this.yAliado<2 || this.yAliado>=tamanoYLienzo ){
+			orientacion = Math.floor(aleatorio(0,1));
+			colisionPared=true;
+		}
+		if(orientacion===1 && colisionPared===true){
+			this.img = document.getElementById("imgPB2-F");
+			this.direccion = 1;
+			this.velocidad=aleatorio(8,15);
+			this.xAliado=aleatorio(10,tamanoXLienzo-50);
+			this.yAliado = 2;
+			colisionPared=false;
+
+		} 
+		if(orientacion===-1  && colisionPared===true) {
+			this.img = document.getElementById("imgPB2-A");	
+			this.direccion = -1;
+			this.velocidad = aleatorio(8,15);
+			this.xAliado = aleatorio(10,tamanoXLienzo-50);
+			this.yAliado = tamanoYLienzo-2;
+			colisionPared=false;
+		}	
+	};
 }
+
 //Clase del tipo profesor malo
-function profesorMalo(){
-	var arregloPMalo1 = ["imgPC1-I","imgPC1-D"];	//Profesor cuchilla que va de izq a der
-	var arregloPMalo2 = ["imgPC2-A","imgPC2-F"];	//Profesor cuchilla que va de arriba a abajo
+function profesorMalo(ori){
+	var img, velocidad;
+	var colisionPared=false;
+	var xEnemigo, yEnemigo;
+	var orientacion = ori;
+	var direccion;
+	if(orientacion===1){
+		this.img = document.getElementById("imgPC1-D");
+		this.direccion=1;
+		this.xEnemigo=20;
+		
+	} else if(orientacion===0) {
+		this.img = document.getElementById("imgPC1-I");
+		this.direccion=-1;
+		this.xEnemigo=tamanoXLienzo;
+	}	
+
+	
+	this.yEnemigo = aleatorio(10,tamanoYLienzo-50);
+	this.velocidad = 0;
+	while(this.velocidad === 0){
+		this.velocidad=aleatorio(3,7);
+	}
+		
+	this.dibujarEnemigo = function(ctx){
+		var img3 = this.img;
+		ctx.drawImage(img3,this.xEnemigo,this.yEnemigo);
+	};		
+	
+	this.moverEnemigo = function(){
+		this.xEnemigo = this.xEnemigo + (this.direccion*0.2*(this.velocidad/10));
+		this.xEnemigo = (tamanoXLienzo + this.xEnemigo)%tamanoXLienzo;
+		this.reiniciar();
+	};
+	
+	this.reiniciar = function(){
+		if(this.xEnemigo<=2 || this.xEnemigo>=tamanoXLienzo ){	
+			colisionPared=true;
+		}
+		if(orientacion===1 && colisionPared===true){
+			this.img = document.getElementById("imgPC1-D");
+			this.direccion = 1;
+			this.velocidad=aleatorio(1,7);
+			this.xEnemigo=2;
+			this.yEnemigo = aleatorio(10,tamanoYLienzo-50);
+			colisionPared=false;
+
+		} 
+		if(orientacion===-1  && colisionPared===true) {
+			this.img = document.getElementById("imgPC1-I");	
+			this.direccion = -1;
+			this.velocidad=aleatorio(3,7);
+			this.xEnemigo=tamanoXLienzo-2;
+			this.yEnemigo = aleatorio(10,tamanoYLienzo-50);
+			colisionPared=false;
+		}	
+	};
 }
+	
 function run(){
 	buffer.width = elCanvas.width;				//El buffer se pone del tamaño del canvas del documento html
 	buffer.height = elCanvas.height;
@@ -188,89 +308,41 @@ function run(){
 		contextoBuffer.clearRect(0,0,buffer.width,buffer.height);	//Hace un rectangulo dentro de un rectangulo de tamaño dado el cual limpia dibujos anteriormente hechos
 		
 		est.actualizar(contextoBuffer);	//Se dibuja el estudiante en el este contexto
-		
-		//Aca va lo de validar que colisionen o no con los profesores
+		for(i=0; i<profesoresMalos.length; i++){		//Mueve los profesores malos
+			profesoresMalos[i].dibujarEnemigo(contextoBuffer);
+			profesoresMalos[i].moverEnemigo();
+			if(est.colision(profesoresMalos[i].xEnemigo,profesoresMalos[i].yEnemigo)){
+				vidaEst= vidaEst-1;
+				puntaje = puntaje-1;
+			}
+		}
+		for (i=0; i<profesoresBuenos.length; i++){
+			profesoresBuenos[i].dibujarAliado(contextoBuffer);
+			profesoresBuenos[i].moverAliado();
+			if(est.colision(profesoresBuenos[i].xAliado, profesoresBuenos[i].yAliado)){
+				vidaEst = vidaEst+1;
+				puntaje = puntaje+1;
+				
+			}
+		}
 		if(vidaEst<=0){
 			jugando=false;
-		}
-		moverPersonajes();										//Mueve los profesores
+		}									
 		contexto.clearRect(0,0,elCanvas.width,elCanvas.height);	//Se limpia el rectangulo del contexto del canvas del html
-		contexto.drawImage(buffer, 0, 0);						//Se dibuja lo que está en el buffer
+		contexto.drawImage(buffer, 0, 0);			//Se dibuja lo que está en el buffer
 
 		setInterval(run,10);
-	}
-}
-
-
-
-//Agregado por Edwin
-function crearEnemigos(){
-	for (var i = 0; i <= Math.floor(Math.random()*4) +1; i++) {
-		enemigosDerecha.push(Math.floor(Math.random() * (elCanvas.height-200)));
-		posicionActDerecha.push((-1)*Math.floor(Math.random() * (elCanvas.width)-100));	
-	}
-
-	for (var i = 0; i <= Math.floor(Math.random()*5) +1; i++) {
-		enemigosIzquierda.push(Math.floor(Math.random() * (elCanvas.height-200)));
-		posicionActIzquierda.push(Math.floor(Math.random() * (elCanvas.width)+elCanvas.width));	
+	} else {
+		contextoBuffer.clearRect(0,0,buffer.width,buffer.height);
+		contextoBuffer.fillStyle = "#ffffff";
+		contextoBuffer.font = "120px sans-serif";
+		contextoBuffer.fillText("GAME OVER", 150, 340);
+		contextoBuffer.fillStyle = "#ff0000";
+		contextoBuffer.font = "75px sans-serif";
+		contextoBuffer.fillText("try again", 550, 460);
+		contexto.clearRect(0,0,elCanvas.width,elCanvas.height);
+		contexto.drawImage(buffer, 0, 0);
 	}
 }		
 
-function cambiarPincel(){
-	contexto.fillStyle="#CCFFCC";
-}
-
-		
-function buscarImagenes(){
-	imagenIzquierda.src = "Imagen/ProfesoresMalos/PC1-I.png";
-	imagenDerecha.src = "Imagen/ProfesoresMalos/PC1-D.png";	
-	imagenAliado.src = "Imagen/ProfesoresBuenos/PB2-F.png";
-}
-		
-function moverDerecha(){
-	for (var i = 0; i < enemigosDerecha.length; i++) {
-		contextoBuffer.drawImage(imagenDerecha,posicionActDerecha[i],enemigosDerecha[i],100,200);
-		if(posicionActDerecha[i]>elCanvas.width-10){
-			posicionActDerecha[i]=-8;
-		}
-		else{
-			posicionActDerecha[i]=posicionActDerecha[i]+1;
-		}	
-	}
-}
-
-function moverIzquierda(){
-	for (var i = 0; i < enemigosIzquierda.length; i++) {
-		contextoBuffer.drawImage(imagenIzquierda,posicionActIzquierda[i],enemigosIzquierda[i],100,200);
-		if(posicionActIzquierda[i]<-90){
-			posicionActIzquierda[i]=elCanvas.width-10;
-		}
-		else{
-			posicionActIzquierda[i]=posicionActIzquierda[i]-1;
-		}	
-	}
-}
-
-function moverAliado(){
-	contextoBuffer.drawImage(imagenAliado,aliados,posicionActArriba,100,200);
-	if(posicionActArriba>elCanvas.height-10){
-		posicionActArriba=-90;
-		aliados=(Math.floor(Math.random() * (elCanvas.width))-200);
-	}
-	else{
-		posicionActArriba=posicionActArriba+3;
-		bonus--;
-	}
-}
-		
-function moverPersonajes(){
-	moverIzquierda();
-	moverDerecha();
-	//Aca toca poner una condicion que cuando un profesor se salga del canvas, lo reinicie en un posición random de la
-	if(bonus%10 == 0){
-		moverAliado();
-	} 
-	bonus++;
-}
-//Termina Agregación
 
